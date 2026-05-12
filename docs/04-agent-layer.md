@@ -1,5 +1,12 @@
 # Agent layer
 
+## First principle
+
+The LLM is for reasoning and paraphrasing, not for arithmetic.
+Pre-compute facts in opinionated tools; let the model narrate them
+with citations. Hallucination defense is a structural property of
+the architecture, not a behavioral hope.
+
 ## What the founder gets
 
 - **Cited answers in chat.** Open Claude Code, ask a question, get back

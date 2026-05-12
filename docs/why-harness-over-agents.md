@@ -1,5 +1,12 @@
 # Why harness engineering, not a council of agents
 
+## First principle
+
+The moat is in opinionated tools, not in clever orchestration.
+Build the substrate (MCP + validators + canonical data), let the
+model think, and frontier-model improvements compound for free.
+The hard part is grounding, not agent coordination.
+
 ## What we picked
 
 ```

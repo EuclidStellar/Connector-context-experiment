@@ -1,5 +1,14 @@
 # Founder demo questions — outcome-driven script
 
+## First principle
+
+A dashboard shows you numbers; an employee tells you what to do with
+them. Every question worth asking the agent must map to a concrete
+action the founder will take that day. If a question doesn't drive
+an action, it doesn't earn a tool.
+
+## The questions
+
 Twenty questions a D2C founder can ask the agent, grouped by what kind
 of business decision each one drives. Every question maps to a real MCP
 tool; every response carries citations back to source rows in the lake;

@@ -1,5 +1,12 @@
 # Architecture overview
 
+## First principle
+
+The cost of asking a cross-tool question is higher than the expected
+value of the answer — so most questions go unasked, and the business
+runs on vibes. Build a system that drops the cost of asking to ~zero,
+and surfaces what the founder hasn't thought to ask yet.
+
 ## What a founder gets
 
 - **Cited cross-tool answers.** Open Claude Code, ask a question. Every

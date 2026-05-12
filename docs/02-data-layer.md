@@ -1,5 +1,11 @@
 # Data layer
 
+## First principle
+
+The data is the truth. Every claim must be reconstructible to the
+bytes that produced it. Storage decisions follow from *"what would I
+want to ask in six months?"* — not from what's easy to ship today.
+
 ## What this enables
 
 - **Bug fixes against historical data.** A projection bug is fixed by

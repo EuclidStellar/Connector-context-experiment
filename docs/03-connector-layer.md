@@ -1,5 +1,12 @@
 # Connector layer
 
+## First principle
+
+Source APIs are unstable, paginated, rate-limited, and quirky in
+different ways. The connector layer absorbs all of that variability
+into one uniform envelope shape — so nothing above it ever needs to
+know which source a record came from.
+
 ## What this enables
 
 - **Adding a 4th source is a day of work.** One ABC, one registry entry,

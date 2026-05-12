@@ -1,5 +1,12 @@
 # Scale path — one MCP per merchant, self-hosted
 
+## First principle
+
+The architecture is the moat; substrates are engineering. Design
+for the shape that admits scale at any size; reach scale when the
+business demands it, not before. v0 is the foundation, not the
+ceiling.
+
 ## The deployment model
 
 The natural unit of scale here is **one deployment per merchant**. Each

@@ -1,5 +1,12 @@
 # Why these three connectors
 
+## First principle
+
+Cross-tool is the point. A connector earns its slot by unlocking
+joins the other connectors can't answer alone — not by being a
+popular API. Single-source signals are dashboards; cross-tool
+signals are insight.
+
 ## The triangle
 
 | Connector | Source of truth for      | What it unlocks                                          |

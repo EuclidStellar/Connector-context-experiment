@@ -1,5 +1,11 @@
 # Why a lakehouse, not just a schema
 
+## First principle
+
+We don't know which questions we'll want to ask in six months.
+Preserve source bytes verbatim; derive interpretations as pure
+functions. Every metric is one re-projection away from being right.
+
 ## What this design buys us
 
 - **Bug in a projection?** Edit the function, re-run. Zero API calls.
