@@ -50,7 +50,7 @@ overnight and proposes one high-impact action.
 
 ```bash
 git clone https://github.com/EuclidStellar/Connector-context-experiment.git
-cd connector-context-AI-layer
+cd Connector-context-experiment
 uv sync
 ```
 
