@@ -74,11 +74,12 @@ others' specifics.
 
 ## Where to read next
 
+- [**Future prospect** — where this architecture is going](./future-prospect.md)
 - [Why these three connectors](./why-these-three-connectors.md)
 - [Why a lakehouse, not just a schema](./why-lakehouse-over-schema.md)
 - [Why harness engineering, not a council of agents](./why-harness-over-agents.md)
 - [Data layer in depth](./02-data-layer.md)
 - [Connector layer in depth](./03-connector-layer.md)
 - [Agent layer in depth](./04-agent-layer.md)
-- [Scale and failure modes (honest)](./scale-and-failure-modes.md)
+- [Scale path — one MCP per merchant, self-hosted](./scale-and-failure-modes.md)
 - [Architecture PDF — 5-page visual tour](./architecture.pdf)
