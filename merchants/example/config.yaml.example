@@ -1,0 +1,41 @@
+# D2C AI Employee — non-secret per-merchant config template
+# Copy this file to ./config.yaml in your merchant directory and customize.
+
+merchant_id: example
+merchant_name: "Example Merchant"
+timezone: "Asia/Kolkata"
+base_currency: "INR"
+
+connectors:
+  shopify:
+    enabled: true
+    shop_domain: "your-store.myshopify.com"
+    api_version: "2024-10"
+    scopes:
+      - read_orders
+      - read_products
+      - read_customers
+      - read_fulfillments
+      - read_inventory
+      - read_discounts
+
+  klaviyo:
+    enabled: true
+    api_revision: "2024-10-15"
+
+  razorpay:
+    enabled: true
+    mode: test
+
+ingestion:
+  # v0 uses polling instead of webhooks — no public tunnel needed.
+  mode: polling
+  poll_intervals_minutes:
+    shopify: 15
+    klaviyo: 30
+    razorpay: 30
+  watcher_cron: "0 6 * * *"
+
+raw_lake:
+  path: "./data/raw_lake"
+  partition_by: ["source", "date"]

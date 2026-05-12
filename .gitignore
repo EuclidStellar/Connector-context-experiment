@@ -1,0 +1,49 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Per-merchant config — only the template is committed. Each user runs
+# `d2c init <merchant>` locally to produce their own merchants/<their-id>/.
+merchants/*
+!merchants/example/
+!merchants/example/**
+!merchants/.gitkeep
+
+# Raw lake + canonical DB — local-only data
+data/
+raw_lake/
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Watcher inbox — proposals are per-install
+**/inbox/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/

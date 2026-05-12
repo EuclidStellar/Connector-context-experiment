@@ -1,0 +1,37 @@
+# Merchant context: example
+
+This file is loaded by every loop invocation against this merchant. Plain text,
+version-controlled, editable by the founder.
+
+Copy this to your merchant directory's `CLAUDE.md` and customize per merchant.
+
+## Vocabulary
+
+(Merchant-specific — cohort names, SKU shorthand, internal terms.)
+
+- (none yet)
+
+## Standing orders
+
+(Things the agent must respect across all loops for this merchant.)
+
+- (none yet)
+
+## Pinned investigations
+
+(Questions the founder asks often — muscle memory for the agent.)
+
+- (none yet)
+
+## Notes from prior investigations
+
+(Things the founder has written back — what's been tried, what didn't work, why.)
+
+- (none yet)
+
+## Trust state
+
+Current autonomy rungs per action category live in the reflective layer of
+the MCP (`trust_state` table). For v0, all categories start at rung 1 (Observe);
+categories with legal/financial sensitivity (pricing, refunds, customer data
+deletion) carry `max_rung: 4` as a structural ceiling.

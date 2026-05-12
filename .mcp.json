@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "d2c-ai-employee": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "d2c-mcp"]
+    }
+  }
+}
