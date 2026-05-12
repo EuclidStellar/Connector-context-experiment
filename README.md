@@ -25,7 +25,7 @@ overnight and proposes one high-impact action.
 
 ## Why these specific choices
 
-- [**Future prospect** — where this is going (open Claude-based sandboxed employee)](./docs/future-prospect.md)
+- [**Future prospect** — toward an [OpenClaw](https://openclaw.ai/)-style sandboxed AI employee, specialized for D2C](./docs/future-prospect.md)
 - [**Why these three connectors** (and the honest story about Shiprocket)](./docs/why-these-three-connectors.md)
 - [**Why a lakehouse** (not just a normalized schema)](./docs/why-lakehouse-over-schema.md)
 - [**Why harness engineering** (not a council of agents)](./docs/why-harness-over-agents.md)

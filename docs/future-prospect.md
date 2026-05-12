@@ -2,17 +2,40 @@
 
 ## First principle
 
-This v0 is a substrate, not a product. The destination is an **open
-Claude-based bot that runs as an independent employee in a sandboxed
-environment** — not a tool the founder operates, but a colleague that
-operates the merchant's back-office on the founder's behalf.
+This v0 is a substrate, not a product. The destination is in the
+direction of **[OpenClaw](https://openclaw.ai/)** — the open-source
+24/7 personal AI assistant that runs on the user's own machine, has
+*eyes and hands* (not just chat), keeps persistent memory of the
+relationship across sessions, and operates as a sandboxed colleague
+rather than a tool you operate.
 
-The architecture we shipped is the shape that makes that destination
-reachable. Every load-bearing decision (cited tools, content-addressed
+We are not building OpenClaw itself. OpenClaw is general-purpose —
+browses the web, reads files, runs scripts, manages calendars and
+email. We're building the **D2C-specialized expression of the same
+pattern**: three real SaaS connectors instead of generic web access,
+opinionated cognitive tools instead of arbitrary scripts, citation-
+grounded outputs instead of free-form chat. Same architectural shape,
+sharpened for one job.
+
+Every load-bearing decision in v0 (cited tools, content-addressed
 envelopes, trust gradient, decision audit trail, per-merchant
 CLAUDE.md) was chosen because it points toward the day when the agent
 stops *proposing* and starts *acting* — responsibly, accountably,
 within bounds it has earned.
+
+## Mapping to the OpenClaw pattern
+
+| OpenClaw property                       | v0 status                                                     |
+| --------------------------------------- | ------------------------------------------------------------- |
+| Open-source                             | ✓ MIT license                                                 |
+| Runs on the user's own machine          | ✓ Self-hosted MCP — data never leaves the merchant's env      |
+| Persistent memory of the relationship   | ✓ Per-merchant `CLAUDE.md` + canonical `decisions` table       |
+| 24/7 background operation               | ✓ Watcher loop on cron; considers 8 signals every run         |
+| Eyes (reads sources autonomously)       | ✓ Three connectors, idempotent re-sync                        |
+| Hands (acts on the world)               | △ v0 proposes; rungs 5–6 unlock acting under standing orders  |
+| Many communication channels             | △ Claude Code + inbox; Slack / email / WhatsApp are next      |
+| Privacy-first by construction           | ✓ MCP boundary keeps merchant data on the merchant's side     |
+| General-purpose                         | ✗ Deliberately specialized for D2C operations                 |
 
 ## Today vs tomorrow
 
@@ -168,15 +191,16 @@ answered by shipping into the hands of real merchants.
 
 - **v0** is a working substrate — three connectors, MCP server,
   cited answers, autonomous watcher proposals, decision audit trail.
-- **The destination** is an open, sandboxed, independent Claude-
-  based bot that operates the merchant's back-office as a colleague.
+- **The destination** is an [OpenClaw](https://openclaw.ai/)-style
+  open, sandboxed, independent AI employee — specialized for D2C
+  operations rather than general-purpose.
 - **The architecture** was shaped from day one toward that
-  destination — every load-bearing choice (cited tools, trust
+  destination. Every load-bearing choice (cited tools, trust
   gradient, content-addressed lake, per-merchant CLAUDE.md) points
   there.
 - **The next 12 months** close the epistemic loop, expand the action
   space, enable safe-category autonomous execution, and ship the
-  deployment patterns that put a sandboxed bot in every merchant's
+  deployment patterns that put a sandboxed agent in every merchant's
   environment.
 
 This v0 isn't the product. It's the foundation the product gets built on.
