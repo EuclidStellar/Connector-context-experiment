@@ -6,6 +6,12 @@ exposed to Claude Code as opinionated MCP tools that produce cited,
 founder-actionable answers. An autonomous watcher loop reads the data
 overnight and proposes one high-impact action.
 
+> **5-minute visual tour:** [`docs/architecture.pdf`](./docs/architecture.pdf)
+> is a 5-page PDF — high-level architecture, end-to-end dataflow, two
+> real cross-tool examples, watcher run results, and an honest "wired vs
+> scaffolded" accounting. Skim that first if you want the picture before
+> the prose.
+
 ## What this project demonstrates
 
 | Quality mark | What it means | Read more |
@@ -217,6 +223,16 @@ that produced it.** The reasoning trail behind every architectural
 decision lives in [docs/](./docs/). The implementation is one
 particular instantiation; another team could rebuild it differently and
 arrive at the same correctness if they held the same principles.
+
+## Regenerating the architecture PDF
+
+```bash
+uv run --with matplotlib python tools/make_arch_pdf.py
+```
+
+Re-writes `docs/architecture.pdf` from `tools/make_arch_pdf.py`. matplotlib
+is installed only for this command via `uv run --with` — the project's
+runtime deps stay minimal.
 
 ## License
 

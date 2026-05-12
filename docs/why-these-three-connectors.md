@@ -1,22 +1,14 @@
 # Why these three connectors
 
-**Shopify + Razorpay + Klaviyo.** Not arbitrary — each one fills a
-distinct axis of the merchant's reality, and the *joins* between them are
-where the cross-tool value lives.
+## The triangle
 
-## The triangle, in one line each
+| Connector | Source of truth for      | What it unlocks                                          |
+|-----------|--------------------------|----------------------------------------------------------|
+| Shopify   | what was sold            | orders, products, customers — the storefront ground truth |
+| Razorpay  | what actually got paid   | settlement reality — often diverges from Shopify net      |
+| Klaviyo   | how customers were engaged | email send / open / click — the retention surface       |
 
-| Connector | What it is the source of truth for | Why it's load-bearing                                  |
-| --------- | ---------------------------------- | ------------------------------------------------------ |
-| Shopify   | **What was sold**                  | Orders, products, customers. The merchant's storefront ground truth. |
-| Razorpay  | **What actually got paid**         | Settlement reality. Often diverges from Shopify net (refunds, fees, partial captures). |
-| Klaviyo   | **How customers were engaged**     | Email send / open / click / bounce. The retention surface. |
-
-Two of those three on their own give you a partial picture. All three
-together let you ask cross-tool questions no founder can answer in 30
-seconds today.
-
-## The cross-tool joins that unlock the demo
+## Cross-tool signals these three unlock
 
 ```
                  ┌─────────────────────────────────┐
@@ -26,154 +18,91 @@ seconds today.
                           │              │
               same email  │              │  shopify_order_number
               alias merge │              │  in razorpay notes
-                          │              │
                           ▼              ▼
      ┌──────────────────────────┐    ┌──────────────────────────┐
      │         Klaviyo          │    │        Razorpay          │
-     │  profiles, events,       │    │  orders, settlements     │
-     │  email engagement        │    │                          │
+     │ profiles + email events  │    │  settlement reality      │
      └──────────────────────────┘    └──────────────────────────┘
-                  │                              │
-                  │                              │
-                  ▼                              ▼
-     "Who's reading my emails           "Shopify says X paid,
-      but hasn't bought?"                Razorpay settled Y —
-     (Klaviyo × Shopify)                 where's the gap?"
-                                         (Shopify × Razorpay)
+
+         "Who's reading my emails           "Shopify says paid X,
+          but hasn't bought?"                Razorpay settled Y —
+         find_engaged_non_buyers             where's the gap?"
+                                             find_reconciliation_gap_orders
 ```
 
-These two joins are the soul of the project. Neither is computable from a
-single source, and neither is a question Shopify's own dashboards answer.
+Both joins are computable only across sources. Neither is in Shopify's
+own dashboards.
 
 ## On Shopify
 
-The obvious pick. The merchant's storefront ground truth. We use the
-Admin API with a custom-app token (no OAuth flow needed for v0), poll
-`/orders`, `/products`, `/customers`. The dev store has a 5-orders-per-minute
-draft-order rate limit that bit us when seeding — the seeder has a sliding
-window built around it.
+Storefront ground truth. We use the Admin API with a custom-app token
+(no OAuth in v0), polling `/orders`, `/products`, `/customers`. The
+dev store has a 5-orders/min draft-order rate limit that bit us when
+seeding; the seeder has a sliding window for it.
 
-One unexpected friction: **Shopify dev stores scrub PII from customer
-responses** (email, phone, names return null) unless the custom app is
-explicitly granted "Protected customer data" access. The Shopify projection
-synthesizes a stable email from the customer ID as a workaround, so
-identity merging still works for the v0 demo. Production needs the
-protected-data access granted up front.
+Worth knowing: **Shopify dev stores scrub customer PII** (email, phone,
+name) unless the app is approved for "Protected customer data." The
+projection synthesizes a stable email from the customer ID so identity
+merging still works. Production needs the protected-data access granted.
 
 ## On Razorpay
 
-Razorpay is the killer reconciliation source. The cleanest demo signal in
-the whole project is:
+The killer reconciliation source. The cleanest demo signal in the project:
 
-> *"Order #1009 shows ₹2,161 in Shopify but Razorpay settled only ₹1,798
-> — a ₹363 gap. Near-identical pattern on order #1010. Points to a
-> structural fee or silent partial-refund pattern."*
+> *"Order #1009 shows ₹2,161 in Shopify but Razorpay settled only
+> ₹1,798 — a ₹363 gap. Near-identical pattern on order #1010."*
 
-That gap is invisible without joining the two sources. Razorpay test mode
-gave us a real API to write against (no KYC required), and the seeder
-intentionally injects a ~15% gap rate so the demo has signal.
-
-The connector polls only `/v1/orders` for v0. Payments and refunds add
-richer reconciliation but are harder to seed in test mode (Razorpay's
-test cards work through their checkout flow, not via direct payment
-creation). v0 simulates the gap by varying the Razorpay order amount
+Invisible without the join. Razorpay test mode required no KYC; the
+seeder injects a ~15% gap rate by varying the Razorpay order amount
 against the linked Shopify order's net.
 
-The Razorpay API also has eventual-consistency lag on its `/orders`
-listing index — newly-created orders take a few minutes to appear. The
-connector handles this with a 10-minute freshness buffer (always rewind
-the cursor by 10 min on each poll). Combined with content-addressed
-envelope IDs, this is invisible: we re-fetch the overlap window, it
-dedups, no missed records.
+The `/orders` listing has eventual-consistency lag. The connector
+handles it with a 10-minute freshness buffer on the cursor.
 
 ## On Klaviyo
 
-Klaviyo brings the engagement axis. Profiles, metrics, events — and
-specifically, email send / open / click. This is what makes
-`find_engaged_non_buyers` possible: customers who opened or clicked
-multiple emails but haven't placed an order.
+Brings the engagement axis. Profiles, metrics, events — specifically
+send / open / click — make `find_engaged_non_buyers` possible.
 
 Two quirks worth knowing:
 
 1. **System metrics are read-only.** Klaviyo's `"Opened Email"`,
-   `"Clicked Email"`, `"Received Email"` metrics are generated by their
-   own email-sending infrastructure and silently reject user-POSTed
-   events. The seeder uses custom-named metrics (`"Demo Email Opened"`
-   etc.) which are accepted and round-trip correctly.
-2. **The `/api/events` endpoint can be slow** when the index is hot from
-   recent writes. The connector has retry-with-backoff on transport
-   errors and uses a smaller page size on this endpoint specifically
-   (20 vs the default 50).
+   `"Clicked Email"` etc. are generated by their own email infra;
+   user-POSTed events with those metric names get silently dropped.
+   The seeder uses `"Demo Email Opened"` etc.
+2. **The events endpoint can be slow** when the index is hot from
+   recent writes. The connector has retry-with-backoff + smaller page
+   sizes on this endpoint.
 
-The Klaviyo projection does two things: merges Klaviyo aliases into
-existing Shopify customers when emails match, AND creates new canonical
-customers from Klaviyo profiles with no Shopify match (i.e., engaged
-prospects). This is what makes `find_engaged_non_buyers` find anyone.
+The Klaviyo projection does identity work too: matches by email to
+existing customers, OR creates new canonical customers from Klaviyo
+profiles with no Shopify match (engaged prospects).
 
-## The honest part: Shiprocket
+## Why not Shiprocket
 
-**Shiprocket was originally on the shortlist** for connector #3, and
-arguably it should be — RTO (return-to-origin) is the most uniquely
-Indian-D2C signal, and shipping is the biggest cost line after acquisition.
-A connector that could surface "*these 4 pincodes have 40%+ RTO on COD —
-block COD there*" would be one of the highest-value tools in this entire
-project.
+Shiprocket was the original pick for the third connector — RTO is the
+most uniquely Indian-D2C signal. I tried it. Couldn't get a stable API
+session — kept getting logged out, keys didn't work consistently. Might
+have been a temporary bug; whatever it was, it was a blocker on the time
+I had.
 
-We tried. The developer onboarding experience didn't make it easy.
+Razorpay's test mode worked first time, so I went with that. Razorpay's
+reconciliation gap turned out to be a sharper money signal anyway, and
+Klaviyo's engagement axis pairs better with Shopify than RTO would for
+this demo.
 
-What I hit:
-
-- **Sandbox is thin.** The test environment is bare-bones compared to
-  Razorpay's. Hard to get realistic shipment-status simulation without
-  actually creating shipments, which requires wallet balance + KYC.
-- **Auth flow is JWT-from-email/password** (vs Razorpay's clean API
-  key/secret). Tokens expire every ~10 days; production integration
-  needs an auto-refresh mechanism that the docs don't fully describe.
-- **API documentation has gaps** — webhook payload schemas, error code
-  meanings, and the difference between staging vs production endpoints
-  aren't as crisp as Shopify's or Klaviyo's. Several attempts hit
-  undocumented behavior.
-- **KYC is gating** for endpoints that would matter most in a demo
-  (creating real shipments to simulate the RTO flow). Real KYC was out
-  of scope for a v0 prototype.
-
-This is not a knock on Shiprocket as a product — they have most of Indian
-D2C running on them. **It is a knock on the developer experience for a
-new integrator who wants to ship something in a weekend.** Razorpay's
-test mode is the bar.
-
-**I want to be honest about two things here:**
-
-1. **This is fixable upstream.** If Shiprocket invested in a Razorpay-grade
-   test mode, complete API docs, a key-based auth flow, and a public
-   sandbox that doesn't require wallet funding, this connector would be
-   the most valuable third source in this project — not Klaviyo.
-2. **This is fixable by me, given more time.** I picked Razorpay because
-   it got the demo working faster, not because Shiprocket is impossible.
-   With another few days of focused work — particularly on token-refresh
-   ergonomics and seeding plausible RTO events synthetically — the
-   Shiprocket connector would slot in cleanly. The architecture admits
-   a fourth connector as one day of work (see
-   [connector layer](./03-connector-layer.md#adding-a-4th-connector)).
-
-So this is a deliberate v0 choice, framed honestly: Razorpay reconciliation
-turned out to be a sharper money signal anyway, and Klaviyo's engagement
-axis pairs better with Shopify than RTO would. But the original shortlist
-had Shiprocket, and if I were shipping v0.5, it's the first connector I'd
-add — *after* a round of "Shiprocket DX" work that the rest of the
-ecosystem would benefit from too.
+If I were shipping v0.5, Shiprocket is still the first connector I'd
+revisit — the architecture admits a fourth source as one day of work
+(see [connector layer](./03-connector-layer.md)).
 
 ## What the triangle leaves out
 
-For honesty:
+- **Ad spend** — no Meta Ads / Google Ads connector. Cleanest ROAS/CAC
+  signals live there. Named for v0.5.
+- **Logistics** — no shipping/delivery connector. RTO, NDR, delivery
+  success — uniquely Indian, very valuable. See Shiprocket section above.
+- **Subscription / loyalty** — no subscription source. Recurring-revenue
+  brands would want this.
 
-- **Ad spend.** No Meta Ads / Google Ads connector. The cleanest
-  ROAS/CAC signals live there. Named explicitly as v0.5.
-- **Logistics.** No Shiprocket / Delhivery / AfterShip connector. RTO,
-  NDR, delivery success — uniquely Indian, very valuable. See above.
-- **Subscription / loyalty.** No subscription source. Recurring-revenue
-  D2C brands would want this.
-
-The triangle we shipped is enough to demonstrate the architecture. It is
-not enough to be a complete D2C operating system. The architecture admits
-the others; we just didn't build them.
+Three was enough to demonstrate the architecture. It is not enough to be
+a complete D2C operating system. The architecture admits the others.
