@@ -46,6 +46,60 @@ Each column is a substrate swap on the *same* architecture. The merchant
 chooses how heavy a deployment they want; the code is identical across
 all three.
 
+## Hybrid: AI-as-a-Service for less AI-native merchants
+
+Not every merchant wants to run an Anthropic account, install Claude Code,
+or manage LLM cost themselves. The same architecture supports a hosted-agent
+deployment cleanly:
+
+```
+   MERCHANT'S CLOUD                           OUR SIDE
+   ─────────────────────────                  ─────────────────────────
+   ┌─────────────────────┐                    ┌──────────────────────┐
+   │  MCP server         │  ◄── HTTP MCP ───► │  Agent runtime       │
+   │  (their data,       │   (authed,          │  - interactive chat   │
+   │   their credentials,│    scoped)          │  - watcher loop       │
+   │   their canonical   │                    │  - citation validator │
+   │   lake)             │                    │  - Anthropic API call │
+   └─────────────────────┘                    └──────────────────────┘
+            │                                            │
+            ▼                                            ▼
+   Connector poll → envelopes              We bill per-query or
+   → canonical (all local)                 subscription; merchant pays
+                                            us for the AI side
+```
+
+How it works:
+
+- Merchant installs **only the MCP server** in their cloud — same code,
+  same canonical model, same connectors. Their data, credentials, and
+  envelopes never leave their environment.
+- The agent runtime — interactive chat, watcher loop, citation validator
+  — runs **on our side**. We invoke the Anthropic API on their behalf.
+- We talk to their MCP over **HTTP transport** (MCP supports it natively
+  alongside stdio). The connection is authenticated and scoped to that
+  merchant's MCP.
+- We see tool *results* through the MCP boundary — never raw envelopes
+  or the canonical DB. The merchant can scope or redact at the MCP layer
+  if they want tighter control.
+- Billing happens on our side: per-query, per-merchant subscription,
+  tiered by usage — whatever fits the customer.
+
+Why the architecture admits this:
+
+- MCP is already the boundary between **data (merchant side)** and
+  **reasoning (anywhere)**. The MCP server doesn't move; only the agent's
+  runtime relocates.
+- The watcher's `claude -p` invocation becomes an Anthropic API call from
+  our hosted runtime. The rest of the pipeline — connectors,
+  projections, MCP tools, the citation contract — doesn't change.
+- Data sovereignty is preserved by construction. Tool results pass
+  through; bulk data doesn't.
+
+This is the right deployment shape for merchants who want the outcomes
+(cited cross-tool answers, autonomous proposals) without the AI-native
+operational burden — and the right monetization shape for us.
+
 ## What carries unchanged across every deployment shape
 
 - **The canonical model** — 6 entities + Event, bounded by business
@@ -116,12 +170,15 @@ After those, everything else is platform substrate.
 ## TL;DR
 
 - **v0 runs on a laptop today** — end-to-end against real APIs.
-- **Production = one MCP per merchant, self-hosted** in their own
-  cloud (or wherever they choose).
-- **At 10k merchants, that's 10k independent deployments** — no
-  multi-tenant SaaS, no shared state on our side, full data sovereignty.
+- **Production = one MCP per merchant**, deployed either:
+  - *self-hosted* (in the merchant's own cloud / VM / Kubernetes), or
+  - *hybrid AI-as-a-Service* (MCP on merchant's side, agent runtime on
+    ours, we monetize the AI tier).
+- **At 10k merchants, that's 10k independent MCP deployments** — no
+  multi-tenant SaaS on our side, no shared state, full data sovereignty.
 - **The architecture is the same across every deployment shape.** What
-  changes is substrate (storage, scheduler, secret store, log sink) —
-  not the code that turns SaaS data into cited founder answers.
+  changes is substrate (storage, scheduler, secret store, log sink, who
+  hosts the agent) — not the code that turns SaaS data into cited
+  founder answers.
 - **The architecture is the moat; substrates are engineering.** v0 is
   the foundation, not the ceiling.
