@@ -8,6 +8,21 @@ from d2c.connectors.base import Connector
 from d2c.envelope import Envelope, content_envelope_id
 
 
+def normalize_shop_domain(domain: str) -> str:
+    """Strip protocol, whitespace, and trailing slash from a Shopify domain.
+
+    Users sometimes paste `https://my-store.myshopify.com` or
+    `my-store.myshopify.com/` into the init prompt; both normalize to
+    `my-store.myshopify.com`. Saves a DNS-resolution failure later.
+    """
+    domain = domain.strip()
+    for prefix in ("https://", "http://"):
+        if domain.startswith(prefix):
+            domain = domain[len(prefix):]
+            break
+    return domain.rstrip("/")
+
+
 class ShopifyConnector(Connector):
     source = "shopify"
     connector_version = "0.0.1"
@@ -16,7 +31,7 @@ class ShopifyConnector(Connector):
 
     def __init__(self, merchant_id: str, config: dict[str, Any], secrets: dict[str, str]):
         super().__init__(merchant_id, config, secrets)
-        self.shop_domain = config["shop_domain"]
+        self.shop_domain = normalize_shop_domain(config["shop_domain"])
         self.api_version = config.get("api_version", "2024-10")
         self.token = secrets["SHOPIFY_ADMIN_API_TOKEN"]
         self.base_url = f"https://{self.shop_domain}/admin/api/{self.api_version}"

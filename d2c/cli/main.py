@@ -282,8 +282,9 @@ def verify(merchant_id: str) -> None:
     # Shopify
     shopify_cfg = config.connectors.get("shopify") or {}
     if shopify_cfg.get("enabled"):
+        from d2c.connectors.shopify import normalize_shop_domain
         try:
-            domain = shopify_cfg["shop_domain"]
+            domain = normalize_shop_domain(shopify_cfg["shop_domain"])
             api_version = shopify_cfg.get("api_version", "2024-10")
             token = config.secret("SHOPIFY_ADMIN_API_TOKEN")
             with httpx.Client(timeout=15) as c:
@@ -294,10 +295,25 @@ def verify(merchant_id: str) -> None:
             if r.status_code == 200:
                 shop = r.json()["shop"]
                 click.echo(f"  shopify   OK    {shop['name']} ({shop['domain']})")
+            elif r.status_code in (401, 403):
+                click.echo(
+                    f"  shopify   FAIL  HTTP {r.status_code} — token rejected. "
+                    f"Re-check SHOPIFY_ADMIN_API_TOKEN in merchants/{merchant_id}/.env"
+                )
             else:
                 click.echo(f"  shopify   FAIL  HTTP {r.status_code}")
         except KeyError as e:
             click.echo(f"  shopify   FAIL  missing credential: {e}")
+        except httpx.ConnectError as e:
+            msg = str(e)
+            if "nodename" in msg or "Name or service" in msg or "getaddrinfo" in msg:
+                click.echo(
+                    f"  shopify   FAIL  cannot resolve {domain!r} — "
+                    f"check shop_domain in merchants/{merchant_id}/config.yaml "
+                    f"(should be just 'your-store.myshopify.com', no https://)"
+                )
+            else:
+                click.echo(f"  shopify   FAIL  ConnectError: {msg}")
         except Exception as e:
             click.echo(f"  shopify   FAIL  {type(e).__name__}: {e}")
     else:
