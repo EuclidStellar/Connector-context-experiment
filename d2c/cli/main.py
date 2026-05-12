@@ -13,6 +13,44 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 MERCHANTS_DIR = PROJECT_ROOT / "merchants"
 
 
+_BANNER = r"""
+  ____  _   _ ___ _     ____  _____ ____
+ | __ )| | | |_ _| |   |  _ \| ____|  _ \
+ |  _ \| | | || || |   | | | |  _| | |_) |
+ | |_) | |_| || || |___| |_| | |___|  _ <
+ |____/ \___/|___|_____|____/|_____|_| \_\
+"""
+
+
+def _print_banner(subtitle: str | None = None) -> None:
+    """Print the BUILDER ASCII banner with an optional subtitle line.
+
+    Used at the top of `d2c init` to give the interactive setup a
+    distinct, recognizable opening — useful for demo videos and for
+    making the install flow feel polished."""
+    click.secho(_BANNER, fg="cyan", bold=True)
+    if subtitle:
+        click.secho(f"   {subtitle}", fg="bright_black")
+        click.secho("   " + "─" * (len(subtitle) + 2), fg="bright_black")
+    click.echo()
+
+
+def _ok(text: str) -> None:
+    """Print a green check + text — for successful writes/steps."""
+    click.echo(f"  {click.style('✓', fg='green', bold=True)} {text}")
+
+
+def _section(title: str) -> None:
+    """Print a colored section header with the cyan accent."""
+    click.echo()
+    click.secho(f"─── {title} ───", fg="cyan", bold=True)
+
+
+def _hint(text: str) -> None:
+    """Print a dim instructional line below a section header."""
+    click.secho(f"    {text}", fg="bright_black")
+
+
 def _load_merchant(merchant_id: str) -> MerchantConfig:
     merchant_dir = MERCHANTS_DIR / merchant_id
     if not merchant_dir.is_dir():
@@ -54,11 +92,11 @@ def init(merchant_id: str, overwrite: bool) -> None:
         )
     merchant_dir.mkdir(parents=True, exist_ok=True)
 
-    click.echo(f"Initializing merchant '{merchant_id}'...")
-    click.echo()
-    click.echo("─── Shopify (custom app admin token) ───")
-    click.echo("    Dev store admin → Settings → Apps and sales channels →")
-    click.echo("    Develop apps → your app → API credentials → Reveal token once.")
+    _print_banner(f"initializing merchant '{merchant_id}'")
+
+    _section("Shopify  (custom app admin token)")
+    _hint("Dev store admin → Settings → Apps and sales channels →")
+    _hint("Develop apps → your app → API credentials → Reveal token once.")
     shop_domain = click.prompt(
         "    Shop domain (e.g., my-store.myshopify.com)",
         type=str,
@@ -83,23 +121,21 @@ def init(merchant_id: str, overwrite: bool) -> None:
         type=str,
     )
 
-    click.echo()
-    click.echo("─── Klaviyo (private API key) ───")
+    _section("Klaviyo  (private API key)")
     klaviyo_enabled = click.confirm("    Configure Klaviyo?", default=True)
     klaviyo_key = ""
     if klaviyo_enabled:
-        click.echo("    Klaviyo → Account → Settings → API Keys → Create Private API Key.")
+        _hint("Klaviyo → Account → Settings → API Keys → Create Private API Key.")
         klaviyo_key = click.prompt(
             "    Private API key (pk_...)", hide_input=True, type=str
         )
 
-    click.echo()
-    click.echo("─── Razorpay (test mode) ───")
+    _section("Razorpay  (test mode)")
     razorpay_enabled = click.confirm("    Configure Razorpay?", default=True)
     razorpay_key_id = ""
     razorpay_secret = ""
     if razorpay_enabled:
-        click.echo("    Razorpay Dashboard (test mode) → Settings → API Keys.")
+        _hint("Razorpay Dashboard (test mode) → Settings → API Keys.")
         razorpay_key_id = click.prompt(
             "    Key ID (rzp_test_...)", hide_input=True, type=str
         )
@@ -207,14 +243,26 @@ the MCP (`trust_state` table). For v0 all categories start at rung 1 (Observe).
     (merchant_dir / "CLAUDE.md").write_text(claude_md)
 
     click.echo()
-    click.echo(f"  wrote {merchant_dir}/config.yaml")
-    click.echo(f"  wrote {merchant_dir}/.env           (gitignored)")
-    click.echo(f"  wrote {merchant_dir}/CLAUDE.md")
+    _ok(f"wrote {merchant_dir}/config.yaml")
+    _ok(f"wrote {merchant_dir}/.env           {click.style('(gitignored)', fg='bright_black')}")
+    _ok(f"wrote {merchant_dir}/CLAUDE.md")
+
     click.echo()
-    click.echo("Next steps:")
-    click.echo(f"  uv run d2c verify {merchant_id}                    # test API access")
-    click.echo(f"  uv run d2c sync {merchant_id} --source shopify     # pull existing data")
-    click.echo(f"  uv run d2c project {merchant_id} --source shopify  # envelopes -> canonical")
+    click.secho("Next steps:", fg="cyan", bold=True)
+    arrow = click.style("▸", fg="cyan")
+    click.echo(
+        f"  {arrow} uv run d2c verify {merchant_id}                    "
+        f"{click.style('# test API access', fg='bright_black')}"
+    )
+    click.echo(
+        f"  {arrow} uv run d2c sync {merchant_id} --source shopify     "
+        f"{click.style('# pull existing data', fg='bright_black')}"
+    )
+    click.echo(
+        f"  {arrow} uv run d2c project {merchant_id} --source shopify  "
+        f"{click.style('# envelopes -> canonical', fg='bright_black')}"
+    )
+    click.echo()
 
 
 @cli.command()
