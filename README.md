@@ -49,7 +49,7 @@ overnight and proposes one high-impact action.
 ### Clone and install
 
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/EuclidStellar/Connector-context-experiment.git
 cd connector-context-AI-layer
 uv sync
 ```
