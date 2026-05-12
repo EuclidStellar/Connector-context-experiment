@@ -20,8 +20,8 @@ overnight and proposes one high-impact action.
 | **Schema discipline** | Source-agnostic canonical model. Provenance (`derived_from_envelope_id`) on every row. Multi-tenant from day one. | [docs/02-data-layer.md](./docs/02-data-layer.md) |
 | **Chat grounding** | Citation contract is real. Every numeric claim binds to an `envelope_id` validated against the local lake. No hallucinated values reach the user. | [docs/04-agent-layer.md#citation-contract](./docs/04-agent-layer.md#citation-contract) |
 | **Agent design** | Trigger, data, decision, action — each step explicit. Each failure mode named, with a chosen response. | [docs/04-agent-layer.md](./docs/04-agent-layer.md) |
-| **Scale / harness thinking** | Honest about what scales naturally (canonical model, prompts, MCP tools) and what doesn't (orchestration, LLM cost, secrets, schema drift). | [docs/scale-and-failure-modes.md](./docs/scale-and-failure-modes.md) |
-| **Eval honesty** | We tell you where it breaks before you find it. | [docs/scale-and-failure-modes.md#eval-honesty-what-we-know-is-missing](./docs/scale-and-failure-modes.md#eval-honesty-what-we-know-is-missing) |
+| **Scale / harness thinking** | Natural unit of scale = one MCP per merchant, self-hosted in their own cloud. Same code from laptop → Docker-on-VM → cloud-managed compute. | [docs/scale-and-failure-modes.md](./docs/scale-and-failure-modes.md) |
+| **Eval honesty** | Every known gap paired with its production fix. We tell you what's next before you find it. | [docs/scale-and-failure-modes.md#next-iteration--features-that-ship-in-the-package](./docs/scale-and-failure-modes.md#next-iteration--features-that-ship-in-the-package) |
 
 ## Why these specific choices
 

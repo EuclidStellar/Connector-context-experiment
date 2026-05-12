@@ -101,17 +101,19 @@ without you teaching it what that means. The teaching can live in:
 The tool is versioned code. It outlives prompt fashions and model
 upgrades.
 
-## What we give up
+## What we deliberately deferred
 
-- **No automatic "debate."** No second opinion emerges by itself. The
-  plan provides for a skeptic loop that runs as a separate background
-  process — same pattern, separate clock. Not built in v0.
-- **No structural delegation.** Tools are the specialists. The
-  architecture is flatter.
-- **Multi-step planning is implicit.** The watcher prompt says "pick
-  3-5 tools"; the model decides which. If the model is bad at planning,
-  there's no separate planner layer to swap in.
+- **Automatic second opinion.** A skeptic loop — same harness pattern,
+  separate clock — slots in as a next iteration on the existing MCP.
+  Not blocking v0; the citation validator already catches the most
+  common failure mode.
+- **Structural delegation.** Tools are the specialists. The flatter
+  architecture is the right call at v0's action space.
+- **Explicit multi-step planning.** The watcher prompt says "pick 3-5
+  tools"; the model decides which. Frontier-model upgrades absorb most
+  of this for free; a dedicated planner layer can ship later when the
+  action space grows.
 
-These are acceptable trade-offs at v0 scale. They become interesting
-again when the action space is huge, or when multiple specialist
-domains genuinely need separate sub-agents — both v1.5+ problems.
+These deferrals open back up cleanly when the action space gets large
+or multiple specialist domains genuinely need separate sub-agents —
+both v1.5+ moves on the same harness foundation.
