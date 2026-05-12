@@ -128,16 +128,18 @@ ON CONFLICT(canonical_id, projection_version) DO UPDATE SET
 
 Re-running the Shopify projection doesn't blow away Razorpay-written data.
 
-## Wired vs scaffolded
+## v0 today vs next iteration
 
-| Component                                   | Code              |
-|---------------------------------------------|-------------------|
-| Envelopes + sync cursors                    | live              |
-| Customer/Product/Order/OrderLine/Message/Event projections | live |
-| Decisions (write path)                      | live              |
-| Shipment projection                         | no source in v0   |
-| Identity merges (confidence-scored)         | naive email match |
-| Beliefs / trust ratchet / changelog         | schema only       |
+| Component                                                    | v0 today    | Next iteration                              |
+| ------------------------------------------------------------ | ----------- | ------------------------------------------- |
+| Envelopes + sync cursors                                     | live        | ✓                                           |
+| Customer / Product / Order / OrderLine / Message / Event projections | live | ✓                                           |
+| Decisions (write path)                                       | live        | ✓                                           |
+| Shipment projection                                          | scaffolded  | wire up when a logistics connector lands    |
+| Identity merges                                              | email match | confidence-scored 3-band merge (own pass)   |
+| Beliefs / trust ratchet / changelog                          | schema      | emission + ratchet (~150 LOC)               |
 
-See [scale-and-failure-modes.md](./scale-and-failure-modes.md) for what
-to build next and why.
+Each row in the right column is a focused slice of work on the existing
+architecture — no redesign required. See
+[scale-and-failure-modes.md](./scale-and-failure-modes.md) for the
+production evolution per component.

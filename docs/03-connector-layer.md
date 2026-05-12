@@ -84,15 +84,22 @@ make the demo non-empty:
 
 Seeders are not connectors. Production deployments don't run them.
 
-## What's missing
+## Next iteration
 
-- **Retry coverage is uneven.** Klaviyo has it; Shopify and Razorpay
-  pollers don't. Should be in the base class.
-- **No async.** Sequential httpx works at 1 merchant; becomes the
-  bottleneck at scale.
-- **No schema drift detection.** A renamed Shopify field silently
-  breaks downstream until you notice.
-- **No OAuth onboarding flow.** v0 uses admin tokens. Real multi-tenant
-  onboarding needs OAuth per source.
+- **Lift retry into the base class.** Klaviyo's pattern is proven —
+  promoting it to the ABC is ~30 lines and lifts reliability for every
+  connector in the fleet.
+- **Async I/O.** Sequential httpx is right at v0 scale. `asyncio.gather`
+  with per-source semaphores makes parallel polls trivial; the ABC's
+  generator shape already supports the swap.
+- **Schema drift detection.** Per-connector schema fingerprint; sync
+  validates a sample and emits a drift warning to the reflective
+  layer. The `projection_version`-in-PK pattern already supports old
+  and new shapes coexisting — no big-bang migration needed.
+- **OAuth onboarding flow.** v0 uses static admin tokens because that
+  was the fastest path to demo. The same `SecretsLoader` parameter
+  point that reads `.env` today reads from an OAuth-issued refresh
+  token tomorrow.
 
-See [scale-and-failure-modes.md](./scale-and-failure-modes.md).
+See [scale-and-failure-modes.md](./scale-and-failure-modes.md) for the
+full production evolution per component.

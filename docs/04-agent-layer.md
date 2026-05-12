@@ -136,16 +136,20 @@ d2c inbox / d2c decide   founder reviews, decision lands in decisions table
 | Decision  | Wrong tool picked                    | Founder rejects in inbox; trust ratchet decreases (not wired yet) |
 | Output    | Preamble before proposal             | `_strip_preamble()` removes it                   |
 
-## Trust gradient (provisioned, not yet enforced)
+## Trust gradient
 
 Six-rung autonomy ladder per action category. v0 caps all categories at
 rung 4 (Propose). Legal-shaped categories (pricing, refunds, customer
-data deletion) carry `max_rung: 4` as a structural ceiling.
+data deletion) carry `max_rung: 4` as a structural ceiling — they will
+never auto-execute, regardless of approval history.
 
-**Gap:** the `trust_state` table is read by the reflective tool, but no
-code ratchets it from `decisions`. Closing that loop is the biggest
-remaining step to make the system feel like an employee instead of a
-report generator. See [scale-and-failure-modes.md](./scale-and-failure-modes.md).
+**Next iteration:** wire the ratchet. `decisions` is the input;
+`trust_state` for each category bumps up or down based on rolling
+approval history. ~150 lines of code. This is the line between
+*advisory* and *accountable* — the system earns autonomy from real
+founder decisions, not from a config knob. See
+[scale-and-failure-modes.md](./scale-and-failure-modes.md) for the
+full evolution path.
 
 ## Why this shape
 
